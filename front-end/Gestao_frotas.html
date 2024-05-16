@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Frotas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Estilos personalizados */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .resultado-box {
+            background-color: #007bff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Centraliza o texto */
+            margin: 0 auto; /* Centraliza a caixa */
+            max-width: 400px; /* Limita a largura para evitar ocupar a largura total da tela */
+        }
+
+        .resultado-box p {
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Gestão de Frotas</h1>
+        <form id="frota-form">
+            <div class="form-group">
+                <label for="driver-name">Nome do Condutor:</label>
+                <input type="text" id="driver-name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="car-plate">Placa do Carro:</label>
+                <input type="text" id="car-plate" class="form-control" required>
+            </div>
+            <div class="form-group row">
+                <div class="col">
+                    <label for="km-inicial">Km Inicial:</label>
+                    <input type="number" id="km-inicial" class="form-control" required>
+                </div>
+                <div class="col">
+                    <label for="km-final">Km Final:</label>
+                    <input type="number" id="km-final" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="damage">Observações:</label>
+                <textarea id="damage" class="form-control"></textarea>
+            </div>
+            <div id="resultado" style="display: none;">
+                <div class="resultado-box">
+                    <p><strong>Km Percorridos:</strong> <span id="km-total"></span></p>
+                </div>
+            </div>
+            <hr>
+            <button type="button" class="btn btn-success btn-block" onclick="registrarDados()">Registrar Dados</button>
+        </form>
+    </div>
+    <script>
+        function registrarDados() {
+            const nomeFuncionario = document.getElementById('driver-name').value;
+            const placaCarro = document.getElementById('car-plate').value;
+            const kmInicial = parseInt(document.getElementById('km-inicial').value);
+            const kmFinal = parseInt(document.getElementById('km-final').value);
+            const observacao = document.getElementById('damage').value;
+
+            const dados = {
+                nomeFuncionario: nomeFuncionario,
+                placa: placaCarro,
+                kmInicial: kmInicial,
+                kmFinal: kmFinal,
+                observacao: observacao
+            };
+
+            fetch('http://localhost:8080/controle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dados),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao registrar dados');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Calcular quilômetros totais percorridos
+                const kmTotalPercorrido = data.kmFinal - data.kmInicial;
+
+                // Mostrar o quilômetro total percorrido
+                document.getElementById('km-total').innerText = kmTotalPercorrido + ' km';
+                document.getElementById('resultado').style.display = 'block';
+
+                alert('Dados registrados com sucesso!');
+                // Limpar os campos do formulário ou fazer outra ação, se necessário
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao registrar dados');
+            });
+        }
+    </script>
+</body>
+</html>
